@@ -1,3 +1,4 @@
+using API.Helpers;
 using Core.Interfaces;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Builder;
@@ -25,8 +26,15 @@ namespace API
         {
             //lifetime of an http request, whn it creates a controller it creates this repository,
             //when the controller is destroyed, it destroys this too
+           
             services.AddScoped<IProductRepository, ProductRepository>(); 
+
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+            services.AddAutoMapper(typeof(MappingProfiles));
+
             services.AddControllers();
+            
             //we did that when setting up the connection string
             services.AddDbContext<StoreContext>(x => 
                 x.UseSqlite(_config.GetConnectionString("Default")));
@@ -52,6 +60,8 @@ namespace API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseStaticFiles();
 
             app.UseAuthorization();
 
