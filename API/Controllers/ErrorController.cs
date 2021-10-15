@@ -16,7 +16,7 @@ namespace API.Controllers
     {
        public IActionResult Prob(int code)
        {
-           return new OkObjectResult(new ApiResponse(code));
+           return new OkObjectResult(new ApiResponse(code)); //nu cred ca ar trebui sa trimitem OkObjectResult, aici intra doar pt erori
        }
     }
 }
