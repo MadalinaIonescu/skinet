@@ -17,6 +17,9 @@ namespace API.Extenstions
             //lifetime of an http request, whn it creates a controller it creates this repository,
             //when the controller is destroyed, it destroys this too
             services.AddScoped<IProductRepository, ProductRepository>(); 
+
+            services.AddScoped<IBasketRepository, BasketRepository>();
+
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
             services.Configure<ApiBehaviorOptions>(options => 
