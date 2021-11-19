@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using API.Errors;
 using Core.Interfaces;
 using Infrastructure.Data;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,8 +12,10 @@ namespace API.Extenstions
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            //lifetime of an http request, whn it creates a controller it creates this repository,
+            //lifetime of an http request, whn it creates a controller it creates this repository/service,
             //when the controller is destroyed, it destroys this too
+            services.AddScoped<ITokenService, TokenService>();
+
             services.AddScoped<IProductRepository, ProductRepository>(); 
 
             services.AddScoped<IBasketRepository, BasketRepository>();
