@@ -16,6 +16,10 @@ namespace API.Extenstions
             //when the controller is destroyed, it destroys this too
             services.AddScoped<ITokenService, TokenService>();
 
+            services.AddScoped<IOrderService, OrderService>();
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            
             services.AddScoped<IProductRepository, ProductRepository>(); 
 
             services.AddScoped<IBasketRepository, BasketRepository>();

@@ -3,14 +3,16 @@ using System;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Infrastructure.Data.Migrations
 {
     [DbContext(typeof(StoreContext))]
-    partial class StoreContextModelSnapshot : ModelSnapshot
+    [Migration("20211220103204_OrderEntityAdded")]
+    partial class OrderEntityAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,7 +24,7 @@ namespace Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("DeliveryTime")
+                    b.Property<string>("DeliveryType")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
@@ -51,8 +53,8 @@ namespace Infrastructure.Data.Migrations
                     b.Property<int?>("DeliveryMethodId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<long>("OrderDate")
-                        .HasColumnType("INTEGER");
+                    b.Property<DateTimeOffset>("OrderDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("PaymentIntentId")
                         .HasColumnType("TEXT");
@@ -216,7 +218,7 @@ namespace Infrastructure.Data.Migrations
                             b1.Property<string>("PictureUrl")
                                 .HasColumnType("TEXT");
 
-                            b1.Property<int>("ProductItemId")
+                            b1.Property<int>("ProductItenId")
                                 .HasColumnType("INTEGER");
 
                             b1.Property<string>("ProductName")
