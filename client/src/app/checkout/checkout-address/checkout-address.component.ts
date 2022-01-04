@@ -10,6 +10,7 @@ import { AccountService } from 'src/app/account/account.service';
 })
 export class CheckoutAddressComponent implements OnInit {
   @Input() checkoutForm: FormGroup;
+  @Input() isCompleted: boolean;
 
   constructor(private accountService: AccountService, private toaster: ToastrService) { }
 

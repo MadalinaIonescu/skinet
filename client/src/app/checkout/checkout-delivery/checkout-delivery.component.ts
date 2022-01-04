@@ -11,7 +11,9 @@ import { CheckoutService } from '../checkout.service';
 })
 export class CheckoutDeliveryComponent implements OnInit {
   @Input() checkoutForm : FormGroup;
+  @Input() isCompleted: boolean;
   deliveryMethods : IDeliveryMethod[]
+  //selectedDeliveryMethod : IDeliveryMethod;
   
   constructor(private checkoutService: CheckoutService, private basketService: BasketService) { }
 
@@ -21,6 +23,10 @@ export class CheckoutDeliveryComponent implements OnInit {
     }, error => {
       console.log(error);
     });
+  /*  this.selectedDeliveryMethod = this.basketService.selectedDeliveryMethod;
+    if(this.selectedDeliveryMethod){
+      console.log(this.selectedDeliveryMethod.description + this.selectedDeliveryMethod.id);
+    }*/
   }
 
   setShippingPrice(deliveryMethod: IDeliveryMethod){

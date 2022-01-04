@@ -20,12 +20,14 @@ export class BasketService {
   basketTotal$ = this.basketTotalSource.asObservable();
 
   shipping = 0;
+  selectedDeliveryMethod: IDeliveryMethod = null;
 
   constructor(private http: HttpClient) { }
 
   setShippingPrice(deliveryMethod: IDeliveryMethod){
     this.shipping = deliveryMethod.price;
     this.calculateTotals();
+    this.selectedDeliveryMethod = deliveryMethod;
   }
 
   getBasket(id: string){
@@ -95,6 +97,7 @@ export class BasketService {
     this.basketSource.next(null);
     this.basketTotalSource.next(null);
     localStorage.removeItem('basket_id');
+    this.shipping = 0;
   }
 
   deleteBasket(basket: IBasket) {
