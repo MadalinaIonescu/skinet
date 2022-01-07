@@ -19,8 +19,8 @@ basketTotals$: Observable<IBasketTotals>;
   ngOnInit(): void {
     this.createCheckoutForm();
     this.getAddressFormValues();
+    this.getDeliveryFormValue();
     this.basketTotals$ = this.basketService.basketTotal$;
-    //this.getDeliveryFormValue();
   }
 
   createCheckoutForm(){
@@ -53,8 +53,11 @@ basketTotals$: Observable<IBasketTotals>;
   }
 
   getDeliveryFormValue(){
-    if(this.basketService.selectedDeliveryMethod)
-    this.checkoutForm.get('deliveryForm').patchValue(this.basketService.selectedDeliveryMethod);
+    const basket = this.basketService.getCurrentBasketValue();
+    if(basket.deliveryMethodId !== null){
+      this.checkoutForm.get('deliveryForm').get('deliveryMethod').patchValue(basket.deliveryMethodId.toString());
+      console.log(basket);
+    }
     
   }
 
