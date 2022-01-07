@@ -12,6 +12,9 @@ namespace API.Extenstions
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
+            //the entire lifetime of the app
+            services.AddSingleton<IResponseCacheService, ResponseCacheService>();
+
             //lifetime of an http request, whn it creates a controller it creates this repository/service,
             //when the controller is destroyed, it destroys this too
             services.AddScoped<ITokenService, TokenService>();
