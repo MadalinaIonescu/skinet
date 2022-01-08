@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using API.Extenstions;
 using API.Helpers;
 using API.Middleware;
@@ -8,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using StackExchange.Redis;
 
 namespace API
@@ -31,11 +34,11 @@ namespace API
             
             //we did that when setting up the connection string
             services.AddDbContext<StoreContext>(x => 
-                x.UseSqlite(_config.GetConnectionString("Default")));
+                x.UseNpgsql(_config.GetConnectionString("Default")));
 
             services.AddDbContext<AppIdentityDbContext>(x =>
             {
-                x.UseSqlite(_config.GetConnectionString("IdentityConnection"));
+                x.UseNpgsql(_config.GetConnectionString("IdentityConnection"));
 
             });    
 
@@ -74,6 +77,12 @@ namespace API
 
             app.UseStaticFiles();
 
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider( Path.Combine(Directory.GetCurrentDirectory(), "Content")),
+                RequestPath = "/content"
+            });
+
             app.UseCors("CorsPolicy");
 
             app.UseAuthentication();
@@ -85,6 +94,9 @@ namespace API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                //api serves angular app so, for angular routes, 
+                //we don't want api to try to find routes, and we redirect here
+                endpoints.MapFallbackToController("Index", "Fallback");
             });
         }
     }
