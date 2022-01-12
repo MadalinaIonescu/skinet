@@ -17,11 +17,12 @@ orders: IOrder[]
   }
 
   getOrders(){
-    this.ordersService.getOrders().subscribe( (orders:IOrder[]) => {
+    this.ordersService.getOrders().subscribe( {
+      next: (orders:IOrder[]) => {
       this.orders = orders.sort((a,b) => a.id - b.id)
-    }, error =>{
-      console.log(error);
-    });
+    }, error:(e) =>{
+      console.log(e);
+    }});
   }
 
 }

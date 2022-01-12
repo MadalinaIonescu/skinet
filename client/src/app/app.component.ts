@@ -20,20 +20,22 @@ export class AppComponent implements OnInit{
   loadBasket() {
     const basketId = localStorage.getItem('basket_id');
     if(basketId){
-      this.basketService.getBasket(basketId).subscribe( () =>{
+      this.basketService.getBasket(basketId).subscribe({
+        next: () =>{
         console.log('initialised basket');
-      }, error =>{
-        console.log(error);
-      });
+      }, error: (e) =>{
+        console.log(e);
+      }});
     }
   }
 
   loadCurrentUser() {
     const token = localStorage.getItem('token');
-      this.accountService.loadCurrentUser(token).subscribe( () =>{
+      this.accountService.loadCurrentUser(token).subscribe({
+        next: () =>{
         console.log('loaded user');
-      }, error => {
-        console.log(error);  
-      });
+      }, error: (e) => {
+        console.log(e);  
+      }});
   }
 }

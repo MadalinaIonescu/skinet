@@ -35,28 +35,29 @@ export class ShopComponent implements OnInit {
   }
 
   getProducts(useCache = false){
-    this.shopService.getProducts(useCache).subscribe(response => {
+    this.shopService.getProducts(useCache).subscribe({
+      next: (response) => {
       this.products = response.data;
       this.totalCount = response.count; 
-    }, error => 
-    console.log(console.error)
+    }, error: (e) => 
+    console.log(e)}
     );
   }
 
   getBrands(){
-    this.shopService.getBrands().subscribe(response => {
+    this.shopService.getBrands().subscribe({next:(response) => {
       this.brands = [{id:0, name:'All'}, ...response];
-    }, error => 
-    console.log(console.error)
-    );
+    }, error:(e) => 
+    console.log(e.message)
+  });
   }
 
   getTypes(){
-    this.shopService.getTypes().subscribe(response => {
+    this.shopService.getTypes().subscribe({next: (response) => {
       this.types =  [{id:0, name:'All'}, ...response];
-    }, error => 
+    }, error: (e) => 
     console.log(console.error)
-    );
+  });
   }
 
   onBrandSelected(brandId: number){

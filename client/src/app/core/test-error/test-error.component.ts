@@ -16,36 +16,40 @@ validationErrors: any;
   }
 
   get404Error (){
-    this.http.get(this.baseUrl + 'products/42').subscribe( response =>{
+    this.http.get(this.baseUrl + 'products/42').subscribe({
+      next: (response) =>{
       console.log(response);
-    }, error =>{
-      console.log(error);
-    });
+    }, error:(e) =>{
+      console.log(e);
+    }});
   }
 
   get500Error (){
-    this.http.get(this.baseUrl + 'buggy/servererror').subscribe( response =>{
+    this.http.get(this.baseUrl + 'buggy/servererror').subscribe({
+      next: (response) =>{
       console.log(response);
-    }, error =>{
-      console.log(error);
-    });
+    }, error:(e) =>{
+      console.log(e);
+    }});
   }
 
   get400Error (){
-    this.http.get(this.baseUrl + 'buggy/badrequest').subscribe( response =>{
+    this.http.get(this.baseUrl + 'buggy/badrequest').subscribe({
+      next: (response) =>{
       console.log(response);
-    }, error =>{
-      console.log(error);
-    });
+    },error: (e) =>{
+      console.log(e);
+    }});
   }
 
   get400ValidationError (){
-    this.http.get(this.baseUrl + 'products/fortytwo').subscribe( response =>{
+    this.http.get(this.baseUrl + 'products/fortytwo').subscribe({
+      next: (response) =>{
       console.log(response);
-    }, error =>{
-      console.log(error);
-      this.validationErrors = error.errors;
-    });
+    }, error:(e) =>{
+      console.log(e);
+      this.validationErrors = e.errors;
+    }});
   }
   
   

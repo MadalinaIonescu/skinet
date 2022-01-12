@@ -28,11 +28,12 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit() {
-    this.accountService.login(this.loginForm.value).subscribe( () =>{
+    this.accountService.login(this.loginForm.value).subscribe({
+      next: () =>{
       this.router.navigateByUrl(this.returnUrl);
-    }, error => {
-      console.log(error);
-    })
+    }, error:(e) => {
+      console.log(e);
+    }})
   }
 
 }

@@ -22,12 +22,13 @@ order: IOrder;
   }
 
   getOrderDetailed(id: number){
-    this.ordersService.getOrderDetailed(id).subscribe( (order: IOrder) =>{
+    this.ordersService.getOrderDetailed(id).subscribe({
+      next: (order: IOrder) =>{
       this.order = order;
       this.breadCrumbService.set('@OrderDetailed', `Order# ${order.id} - ${order.status}`);
-    }, error =>{
-      console.log(error);
-    })
+    }, error:(e) =>{
+      console.log(e);
+    }})
   }
 
 }

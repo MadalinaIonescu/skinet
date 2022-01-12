@@ -24,13 +24,14 @@ quantity =1;
   }
 
   loadProduct(){
-    this.shopService.getProduct(+this.activatedRoute.snapshot.paramMap.get('id')).subscribe(product =>{
+    this.shopService.getProduct(+this.activatedRoute.snapshot.paramMap.get('id')).subscribe({
+      next:(product) =>{
       this.product = product;
       this.bcService.set('@productDetails', product.name)
     },
-    error =>{
+    error:(e) =>{
       console.log(console.error);
-    });
+    }});
   }
 
   incrementQuantity(){

@@ -30,13 +30,13 @@ errors: string[];
   }
 
   onSubmit(){
-    this.accountService.register(this.registerForm.value).subscribe(response=>{
+    this.accountService.register(this.registerForm.value).subscribe({
+      next:(response) =>{
       this.router.navigateByUrl('/shop')
-    }, error => {
-      console.log(error);
-      this.errors = error.errors;
-      
-    });
+    }, error:(e) => {
+      console.log(e);
+      this.errors = e.errors;  
+    }});
    }
 
    validateEmailNotTaken(): AsyncValidatorFn{

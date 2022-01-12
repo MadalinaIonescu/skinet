@@ -20,12 +20,13 @@ export class CheckoutAddressComponent implements OnInit {
 
   saveUserAddress(){
     this.accountService.updateUserAddress(this.checkoutForm.get('addressForm').value)
-    .subscribe((address: IAddress) =>{
+    .subscribe({
+      next: (address: IAddress) =>{
       this.toaster.success('Address saved');
       this.checkoutForm.get('addressForm').reset(address);
-    }, error => {
-      this.toaster.error(error.message);
-    })
+    }, error : (e) => {
+      this.toaster.error(e.message);
+    }});
   }
 
 }

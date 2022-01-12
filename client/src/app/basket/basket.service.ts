@@ -51,14 +51,14 @@ export class BasketService {
   }
 
   setBasket(basket: IBasket){
-    return this.http.post(this.baseUrl + 'basket', basket).subscribe(
-      (response: IBasket) =>{
+    return this.http.post(this.baseUrl + 'basket', basket).subscribe({
+      next:(response: IBasket) =>{
         this.basketSource.next(response);
         this.calculateTotals();
       },
-      error =>{
-        console.log(error);
-      });
+      error:(e) =>{
+        console.log(e);
+      }});
   }
 
   getCurrentBasketValue(){
@@ -111,14 +111,15 @@ export class BasketService {
   }
 
   deleteBasket(basket: IBasket) {
-    return this.http.delete(this.baseUrl + 'basket?id=' + basket.id).subscribe(() =>{
+    return this.http.delete(this.baseUrl + 'basket?id=' + basket.id).subscribe({
+      next:() =>{
       this.basketSource.next(null);
       this.basketTotalSource.next(null);
       localStorage.removeItem('basket_id');
       this.shipping = 0;
-    }, error => {
-      console.log(error);
-    });
+    }, error:(e) => {
+      console.log(e);
+    }});
   }
 
   private calculateTotals(){
