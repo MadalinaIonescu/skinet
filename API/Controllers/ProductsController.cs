@@ -17,22 +17,17 @@ namespace API.Controllers
 {
     public class ProductsController : BaseApiController
     {
-        private readonly IGenericRepository<Product> _productRepo;
-        private readonly IGenericRepository<ProductBrand> _productBrandRepo;
-        private readonly IGenericRepository<ProductType> _productTypeRepo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public ProductsController(IGenericRepository<Product> productRepo,
-         IGenericRepository<ProductBrand> productBrandRepo, IGenericRepository<ProductType> productTypeRepo,
+        public ProductsController(IUnitOfWork unitOfWork,
          IMapper mapper)
         {
-            _productRepo = productRepo;
-            _productTypeRepo = productTypeRepo;
-            _productBrandRepo = productBrandRepo;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
-        [Cached(600)]
+        //[Cached(600)]
         [HttpGet]
         public async Task<ActionResult<Pagination<ProductToReturnDto>>> GetProducts(
             [FromQuery] ProductSpecParams productParams)
@@ -41,9 +36,9 @@ namespace API.Controllers
 
             var countSpec = new ProductWithFiltersForCountSpecification(productParams); 
 
-            var totalItems = await _productRepo.CountAsync(countSpec);
+            var totalItems = await _unitOfWork.Repository<Product>().CountAsync(countSpec);
 
-            var products = await _productRepo.ListAsync(spec);
+            var products = await _unitOfWork.Repository<Product>().ListAsync(spec);
 
             var data = _mapper
                 .Map<IReadOnlyList<Product>,IReadOnlyList<ProductToReturnDto>>(products);
@@ -60,7 +55,7 @@ namespace API.Controllers
         public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
         {
             var spec = new ProductsWithTypesAndBrandsSpecification(id);
-            var product = await _productRepo.GetEntityWithSpec(spec);
+            var product = await _unitOfWork.Repository<Product>().GetEntityWithSpec(spec);
 
             if(product == null)
             {
@@ -74,14 +69,62 @@ namespace API.Controllers
         [HttpGet("brands")]
         public async Task<ActionResult<IReadOnlyList<ProductBrand>>> GetProductBrands()
         {
-            return Ok(await _productBrandRepo.ListAllAsync());
+            return Ok(await _unitOfWork.Repository<ProductBrand>().ListAllAsync());
         }
 
         [Cached(600)]
         [HttpGet("types")]
         public async Task<ActionResult<IReadOnlyList<ProductType>>> GetProductTypes()
         {
-            return Ok(await _productTypeRepo.ListAllAsync());
+            return Ok(await _unitOfWork.Repository<ProductType>().ListAllAsync());
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Product>> CreateProduct(ProductCreateDto productCreateDto)
+        {
+            Product product = _mapper.Map<ProductCreateDto, Product>(productCreateDto);
+            product.PictureUrl = "images/products/placeholder.png";
+
+            _unitOfWork.Repository<Product>().Add(product);
+            var result = await _unitOfWork.Complete();
+
+            if(result <= 0)
+            {
+                return BadRequest( new ApiResponse(400, "Problem Creating product"));
+            }
+            return Ok(product);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Product>> UpdateProduct(int id, ProductCreateDto productCreateDto)
+        {
+            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
+             _mapper.Map(productCreateDto, product);
+
+           _unitOfWork.Repository<Product>().Update(product);
+
+           var result = await _unitOfWork.Complete();
+
+           if(result <=0)
+           {
+               return BadRequest(new ApiResponse(400, "Problem updating product"));
+           }
+           return Ok(product);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteProduct(int id)
+        {
+            var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
+            _unitOfWork.Repository<Product>().Delete(product);
+
+            var result = await _unitOfWork.Complete();
+
+            if (result <= 0)
+            {
+                return BadRequest(new ApiResponse(400, "Problem updating product"));
+            }
+            return Ok();
         }
     }
 }

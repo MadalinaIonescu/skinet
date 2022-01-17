@@ -23,6 +23,7 @@ namespace API.Helpers
             CreateMap<CustomerBasket, CustomerBasketDto>().ReverseMap();
             CreateMap<BasketItem, BasketItemDto>().ReverseMap();
             CreateMap<AddressDto, Core.Entities.OrderAggregate.Address>();
+            CreateMap<ProductCreateDto, Product>();
             
             CreateMap<Order, OrderToReturnDto>()
             .ForMember(d => d.DeliveryMethod, o => o.MapFrom( s => s.DeliveryMethod.ShortName))
