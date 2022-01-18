@@ -43,7 +43,7 @@ namespace API.Controllers
             {
                 DisplayName = user.DisplayName,
                 Email = user.Email,
-                Token = _tokenService.CreateToken(user)
+                Token = await _tokenService.CreateToken(user)
             };
 
         }
@@ -106,18 +106,16 @@ namespace API.Controllers
             {
                 DisplayName = user.DisplayName,
                 Email = user.Email,
-                Token = _tokenService.CreateToken(user)
+                Token = await _tokenService.CreateToken(user)
             };
         }
 
         [HttpPost("register")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
-            if(CheckEmailExistsAsync(registerDto.Email).Result.Value)
+           if (CheckEmailExistsAsync(registerDto.Email).Result.Value)
             {
-                return new BadRequestObjectResult(new ApiValidationErrorResponse{
-                    Errors = new []{"Email address is in use."}
-                });
+                return new BadRequestObjectResult(new ApiValidationErrorResponse{Errors = new []{"Email address is in use"}});
             }
 
             var user = new AppUser
@@ -129,16 +127,17 @@ namespace API.Controllers
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
 
-            if(!result.Succeeded)
-            {
-                return BadRequest(new ApiResponse(400));
-            }
+            if (!result.Succeeded) return BadRequest(new ApiResponse(400));
+
+            var roleAddResult = await _userManager.AddToRoleAsync(user, "Member");
+            
+            if (!roleAddResult.Succeeded) return BadRequest("Failed to add to role");
 
             return new UserDto
             {
                 DisplayName = user.DisplayName,
-                Email = user.Email,
-                Token = _tokenService.CreateToken(user)
+                Token = await _tokenService.CreateToken(user),
+                Email = user.Email
             };
         }
     }

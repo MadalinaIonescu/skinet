@@ -18,9 +18,11 @@ namespace API.Extenstions
         public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration config)
         {
             var builder = services.AddIdentityCore<AppUser>(); // ne pune la dispozitie UserManager<AppUser>
-            builder = new IdentityBuilder(builder.UserType, builder.Services);
+            builder = new IdentityBuilder(builder.UserType, typeof(AppRole), builder.Services);
             builder.AddEntityFrameworkStores<AppIdentityDbContext>(); //da voie lui UserManager sa umble cu IdentityDb a noastra
             builder.AddSignInManager<SignInManager<AppUser>>();
+            builder.AddRoleValidator<RoleValidator<AppRole>>();
+            builder.AddRoleManager<RoleManager<AppRole>>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {
