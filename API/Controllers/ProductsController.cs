@@ -99,10 +99,13 @@ namespace API.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<Product>> UpdateProduct(int id, ProductCreateDto productCreateDto)
+        public async Task<ActionResult<Product>> UpdateProduct(int id, ProductCreateDto productUpdateDto)
         {
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
-             _mapper.Map(productCreateDto, product);
+
+            productUpdateDto.PictureUrl = product.PictureUrl;
+
+            _mapper.Map(productUpdateDto, product);
 
            _unitOfWork.Repository<Product>().Update(product);
 
