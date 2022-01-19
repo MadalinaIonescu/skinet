@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using API.Dtos;
 using AutoMapper;
 using Core.Entities;
@@ -17,11 +18,13 @@ namespace API.Helpers
         public string Resolve(Product source, ProductToReturnDto destination,
          string destMember, ResolutionContext context)
         {
-            if(!string.IsNullOrEmpty(source.PictureUrl))
+            var photo = source.Photos.FirstOrDefault(x=> x.IsMain);
+
+            if(photo!= null)
             {
-                return _config["ApiUrl"] + source.PictureUrl;
+                return _config["ApiUrl"] + photo.PictureUrl;
             }
-            return null;
+            return _config["ApiUrl"] + "images/products/placeholder.png";
         }
     }
 }

@@ -31,6 +31,8 @@ namespace API.Extenstions
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+            services.AddScoped<IPhotoService, PhotoService>();
+
             services.Configure<ApiBehaviorOptions>(options => 
             {
                 options.InvalidModelStateResponseFactory = actionContext =>

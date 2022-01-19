@@ -20,12 +20,14 @@ namespace API.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IPhotoService _photoService;
 
         public ProductsController(IUnitOfWork unitOfWork,
-         IMapper mapper)
+         IMapper mapper, IPhotoService photoService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _photoService = photoService;
         }
 
         //[Cached(600)]
@@ -35,14 +37,14 @@ namespace API.Controllers
         {
             var spec = new ProductsWithTypesAndBrandsSpecification(productParams);
 
-            var countSpec = new ProductWithFiltersForCountSpecification(productParams); 
+            var countSpec = new ProductWithFiltersForCountSpecification(productParams);
 
             var totalItems = await _unitOfWork.Repository<Product>().CountAsync(countSpec);
 
             var products = await _unitOfWork.Repository<Product>().ListAsync(spec);
 
             var data = _mapper
-                .Map<IReadOnlyList<Product>,IReadOnlyList<ProductToReturnDto>>(products);
+                .Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products);
 
             return Ok(new Pagination<ProductToReturnDto>(productParams.PageIndex,
              productParams.PageSize, totalItems, data));
@@ -58,12 +60,12 @@ namespace API.Controllers
             var spec = new ProductsWithTypesAndBrandsSpecification(id);
             var product = await _unitOfWork.Repository<Product>().GetEntityWithSpec(spec);
 
-            if(product == null)
+            if (product == null)
             {
                 return NotFound(new ApiResponse(404));
             }
 
-            return _mapper.Map<Product, ProductToReturnDto> (product);
+            return _mapper.Map<Product, ProductToReturnDto>(product);
         }
 
         [Cached(600)]
@@ -82,40 +84,40 @@ namespace API.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<Product>> CreateProduct(ProductCreateDto productCreateDto)
+        public async Task<ActionResult<ProductToReturnDto>> CreateProduct(ProductCreateDto productToCreate)
         {
-            Product product = _mapper.Map<ProductCreateDto, Product>(productCreateDto);
-            product.PictureUrl = "images/products/placeholder.png";
+            var product = _mapper.Map<ProductCreateDto, Product>(productToCreate);
 
             _unitOfWork.Repository<Product>().Add(product);
+
             var result = await _unitOfWork.Complete();
 
-            if(result <= 0)
+            if (result <= 0)
             {
-                return BadRequest( new ApiResponse(400, "Problem Creating product"));
+                return BadRequest(new ApiResponse(400, "Problem creating product"));
             }
-            return Ok(product);
+
+            return _mapper.Map<Product, ProductToReturnDto>(product);
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<Product>> UpdateProduct(int id, ProductCreateDto productUpdateDto)
+        public async Task<ActionResult<ProductToReturnDto>> UpdateProduct(int id, ProductCreateDto productToUpdate)
         {
             var product = await _unitOfWork.Repository<Product>().GetByIdAsync(id);
 
-            productUpdateDto.PictureUrl = product.PictureUrl;
+            _mapper.Map(productToUpdate, product);
 
-            _mapper.Map(productUpdateDto, product);
+            _unitOfWork.Repository<Product>().Update(product);
 
-           _unitOfWork.Repository<Product>().Update(product);
+            var result = await _unitOfWork.Complete();
 
-           var result = await _unitOfWork.Complete();
+            if (result <= 0)
+            {
+                return BadRequest(new ApiResponse(400, "Problem updating product"));
+            }
 
-           if(result <=0)
-           {
-               return BadRequest(new ApiResponse(400, "Problem updating product"));
-           }
-           return Ok(product);
+            return _mapper.Map<Product, ProductToReturnDto>(product);
         }
 
         [HttpDelete("{id}")]
@@ -132,6 +134,98 @@ namespace API.Controllers
                 return BadRequest(new ApiResponse(400, "Problem updating product"));
             }
             return Ok();
+        }
+
+        [HttpPut("{id}/photo")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ProductToReturnDto>> AddProductPhoto(int id, [FromForm] ProductPhotoDto photoDto)
+        {
+            var spec = new ProductsWithTypesAndBrandsSpecification(id);
+            var product = await _unitOfWork.Repository<Product>().GetEntityWithSpec(spec);
+
+            if (photoDto.Photo.Length > 0)
+            {
+                var photo = await _photoService.SaveToDiskAsync(photoDto.Photo);
+                if (photo != null)
+                {
+                    product.AddPhoto(photo.PictureUrl, photo.FileName);
+                    _unitOfWork.Repository<Product>().Update(product);
+                    var result = await _unitOfWork.Complete();
+
+                    if (result <= 0)
+                    {
+                        return BadRequest(new ApiResponse(400, "Problem adding photo product"));
+                    }
+                }
+                else
+                {
+                    return BadRequest(new ApiResponse(400, "problem saving photo to disk"));
+                }
+            }
+
+            return _mapper.Map<Product, ProductToReturnDto>(product);
+        }
+
+        [HttpDelete("{id}/photo/{photoId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> DeleteProductPhoto(int id, int photoId)
+        {
+            var spec = new ProductsWithTypesAndBrandsSpecification(id);
+            var product = await _unitOfWork.Repository<Product>().GetEntityWithSpec(spec);
+            
+            var photo = product.Photos.SingleOrDefault(x => x.Id == photoId);
+
+            if (photo != null)
+            {
+                if (photo.IsMain)
+                    return BadRequest(new ApiResponse(400,
+                        "You cannot delete the main photo"));
+
+                _photoService.DeleteFromDisk(photo);
+            }
+            else
+            {
+                return BadRequest(new ApiResponse(400, "Photo does not exist"));
+            }
+
+            product.RemovePhoto(photoId);
+            
+            _unitOfWork.Repository<Product>().Update(product);
+            
+            var result = await _unitOfWork.Complete();
+            
+            if (result <= 0) 
+            {
+                return BadRequest(new ApiResponse(400, "Problem adding photo product"));
+            }
+
+            return Ok();
+        }
+
+        [HttpPost("{id}/photo/{photoId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ProductToReturnDto>> SetMainPhoto(int id, int photoId)
+        {
+            var spec = new ProductsWithTypesAndBrandsSpecification(id);
+            var product = await _unitOfWork.Repository<Product>().GetEntityWithSpec(spec);
+
+            if (product.Photos.All(x => x.Id != photoId)) 
+            {
+                return NotFound();
+            }
+            
+            product.SetMainPhoto(photoId);
+            
+            _unitOfWork.Repository<Product>().Update(product);
+            
+            var result = await _unitOfWork.Complete();
+            
+            if (result <= 0) 
+            {
+                return BadRequest(new ApiResponse(400, "Problem adding photo product"));
+            }
+
+            return _mapper.Map<Product, ProductToReturnDto>(product);
         }
     }
 }
