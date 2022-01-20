@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { IBrand } from 'src/app/shared/models/brand';
-import { ProductFormValues } from 'src/app/shared/models/product';
+import { IProduct, ProductFormValues } from 'src/app/shared/models/product';
 import { IType } from 'src/app/shared/models/productType';
 import { ShopService } from 'src/app/shop/shop.service';
 import { AdminService } from '../admin.service';
@@ -13,7 +13,8 @@ import { AdminService } from '../admin.service';
   styleUrls: ['./edit-product.component.scss']
 })
 export class EditProductComponent implements OnInit {
-  product: ProductFormValues;
+  product: IProduct;
+  productFormValues: ProductFormValues;
   brands: IBrand[];
   types: IType[];
 
@@ -21,7 +22,7 @@ export class EditProductComponent implements OnInit {
               private shopService: ShopService,
               private route: ActivatedRoute,
               private router: Router) {
-    this.product = new ProductFormValues();
+    this.productFormValues = new ProductFormValues();
   }
   ngOnInit(): void {
     const brands = this.getBrands();
@@ -39,15 +40,12 @@ export class EditProductComponent implements OnInit {
     }});
   }
 
-  updatePrice(event: any) {
-    this.product.price = event;
-  }
-
   loadProduct() {
     this.shopService.getProduct(+this.route.snapshot.paramMap.get('id')).subscribe((response: any) => {
       const productBrandId = this.brands && this.brands.find(x => x.name === response.productBrand).id;
       const productTypeId = this.types && this.types.find(x => x.name === response.productType).id;
-      this.product = {...response, productBrandId, productTypeId};
+      this.product = response;
+      this.productFormValues = {...response, productBrandId, productTypeId};
     });
   }
 
@@ -59,17 +57,4 @@ export class EditProductComponent implements OnInit {
     return this.shopService.getTypes();
   }
 
-  onSubmit(product: ProductFormValues) {
-    if (this.route.snapshot.url[0].path === 'edit') {
-      const updatedProduct = {...this.product, ...product, price: +product.price};
-      this.adminService.updateProduct(updatedProduct, +this.route.snapshot.paramMap.get('id')).subscribe((response: any) => {
-        this.router.navigate(['/admin']);
-      });
-    } else {
-      const newProduct = {...product, price: +product.price};
-      this.adminService.createProduct(newProduct).subscribe((response: any) => {
-        this.router.navigate(['/admin']);
-      });
-    }
-  }
 }

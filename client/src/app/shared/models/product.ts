@@ -6,7 +6,15 @@ export interface IProduct {
     pictureUrl: string;
     productType: string;
     productBrand: string;
-}
+    photos: IPhoto[];
+  }
+  
+  export interface IPhoto {
+    id: number;
+    pictureUrl: string;
+    fileName: string;
+    isMain: boolean;
+  }
 export interface IProductToCreate {
     name: string;
     description: string;
